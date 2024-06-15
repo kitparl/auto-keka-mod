@@ -36,6 +36,7 @@ app.use('/proxy', async (req, res) => {
       Authorization: token,
       "Content-type": "application/json"
     }, body: JSON.stringify(req.body) }, function (error, response, body) {
+      console.log("body+++++???>>>>", body);
       res.send(body);
     });
 })

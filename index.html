@@ -78,6 +78,7 @@
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            font-size: 1rem;
         }
 
         .fancy-table th {
@@ -124,7 +125,7 @@
             <button onclick="refreshPage()">Refresh</button>
             <button id="clockIn" onclick="clockIn()">Clock In</button>
             <button id="clockOut" onclick="clockOut()">Clock Out</button>
-            <button onclick="enterToken()">Enter Token</button>
+            <button id="enterToken" onclick="enterToken()">Enter Token</button>
         </div>
     </div>
     <script>
@@ -144,10 +145,15 @@
             let loginStatus = "OUT";
             let userDetail = null;
             let isLastLoginType;
+            let timeEntries;
+            clockInButton.disabled = true;
+            clockOutButton.disabled = true;
+
+            loadingImg = document.createElement("img");
+            loadingImg.setAttribute("src", "./asset/loading.gif");
+            screenElement.append(loadingImg);
 
             if (!storeToken) {
-                clockInButton.disabled = true;
-                clockOutButton.disabled = true;
                 clockInButton.classList.add('disabled-button');
                 clockOutButton.classList.add('disabled-button');
             } else {
@@ -172,8 +178,10 @@
                         const result = await response.json();
                         console.log(result);
                         isLastLoginType = result.data.remoteclockinLastEntry.originalPunchStatus;
+                        timeEntries =  result.data.remoteclockin.timeEntries || [];
                     } catch (error) {
                         console.error("error =====<>>>>", error);
+                        alert("Invalid Token or Expired")
                     }
                 };
 
@@ -196,14 +204,17 @@
                             throw new Error("Token expired");
                         }
                         userDetail = await response.json();
-                        console.log(typeof userDetail);
+                        console.log(userDetail);
                     } catch (error) {
                         console.error("error =====<>>>>", error);
+                        alert("Invalid Token or Expired")
+
                     }
                 };
 
                 await lastAttendenceAPI();
                 await userDetailAPI();
+                loadingImg.remove();
 
                 console.log("userDetail", userDetail);
 
@@ -221,19 +232,21 @@
                     clockOutButton.disabled = true;
                     clockOutButton.classList.add('disabled-button');
                 }
+                let workingTotalTime = calculateEffectiveHoursDifference(timeEntries);
+                const loginStatusColor = loginStatus === 'IN' ? 'green' : 'red';
 
                 table.innerHTML = `
             <tr>
                 <th>Status : </th>
-                <th>${loginStatus}</th>
+                <th style="color: ${loginStatusColor};">${loginStatus}</th>
             </tr>
             <tr>
                 <th>Name : </th>
                 <th>${userDetail.data.firstName}</th>
             </tr>
             <tr>
-                <th>Login Hrs : </th>
-                <th>Column 2</th>
+                <th>Log Hrs : </th>
+                <th>${workingTotalTime}</th>
             </tr>
         `;
             }
@@ -241,6 +254,12 @@
 
 
         function clockIn() {
+            clockInButton.disabled = true;
+            clockOutButton.disabled = true;
+            loadingImg = document.createElement("img");
+            loadingImg.setAttribute("src", "./asset/loading.gif");
+            screenElement.append(loadingImg);
+
             if (!storeToken) {
                 let token = prompt('Please Enter Token?');
                 alert(`You are ${token} years old!`);
@@ -287,12 +306,15 @@
                         clockOutButton.classList.remove('disabled-button');
                         screenElement.innerText = 'Clocked In!';
                         console.log("result", result)
-
                         setTimeout(function () {
-                         location.reload();
+                            location.reload();
                         }, 1000);
+                        loadingImg.remove();
                     })
-                    .catch((error) => console.error("error =====<>>>>", error));
+                    .catch((error) => {
+                        console.error("error =====<>>>>", error);
+                        alert("Invalid Token or Expired")
+                    });
             }
 
             apiCall();
@@ -305,6 +327,13 @@
         }
 
         function clockOut() {
+
+            clockInButton.disabled = true;
+            clockOutButton.disabled = true;
+            loadingImg = document.createElement("img");
+            loadingImg.setAttribute("src", "./asset/loading.gif");
+            screenElement.append(loadingImg);
+
             if (!storeToken) {
                 let token = prompt('Please Enter Token?');
                 localStorage.setItem("token", token.trim(" "))
@@ -354,19 +383,57 @@
                         console.log("result", result)
 
                         setTimeout(function () {
-                         location.reload();
+                            location.reload();
                         }, 1000);
+                        loadingImg.remove();
                     })
-                    .catch((error) => console.error("error =====<>>>>", error));
+                    .catch((error) => {
+                        console.error("error =====<>>>>", error)
+                        alert("Invalid Token or Expired")
+                    });
             }
             console.log("api calll logitu");
             apiCall();
         }
 
         function enterToken() {
+            clockInButton.disabled = true;
+            clockOutButton.disabled = true;
             let token = prompt('Please Enter Token?');
             localStorage.setItem("token", token.trim(" "))
             location.reload();
+        }
+
+        function calculateEffectiveHoursDifference(timeEntries) {
+            let totalDuration = 0;
+            let lastTimestamp = null;
+
+            for (let i = 0; i < timeEntries.length; i++) {
+                const { actualTimestamp } = timeEntries[i];
+                const currentTimestamp = new Date(actualTimestamp);
+                if (lastTimestamp === null) {
+                    lastTimestamp = currentTimestamp;
+                } else {
+                    const duration = currentTimestamp - lastTimestamp;
+                    totalDuration += Math.abs(duration);
+                    lastTimestamp = currentTimestamp;
+                }
+            }
+
+            // If the array has an odd number of entries, calculate the duration from the last entry to the current time
+            if (timeEntries.length % 2 !== 0) {
+                const currentTime = new Date();
+                const lastEntry = timeEntries[timeEntries.length - 1];
+                const lastTimestamp = new Date(lastEntry.actualTimestamp);
+                const duration = currentTime - lastTimestamp;
+                totalDuration += Math.abs(duration);
+            }
+
+            const seconds = Math.floor(totalDuration / 1000);
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+
+            return `${hours}h ${minutes}m`;
         }
 
     </script>
