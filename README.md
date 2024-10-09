@@ -13,6 +13,7 @@ CORS is a security feature implemented by web browsers that restricts web pages 
 When attempting to call the Keka API directly from the browser, I received the following error message:
 
 
+
 This message indicates that the browser is blocking the request due to CORS policy.
 
 ## Steps to Bypass CORS Restrictions
@@ -32,6 +33,7 @@ This message indicates that the browser is blocking the request due to CORS poli
    Access-Control-Allow-Origin: *
    Access-Control-Allow-Methods: GET, POST, PUT, DELETE
    Access-Control-Allow-Headers: Content-Type
+   
 ## Story behind the scene
 
 When I was at my first company, the HR department introduced restrictions on daily login settings. We could only log in within a 300-meter radius, and it was required to log in through a mobile application. If we were late, the system would mark us as late, and if it happened more than three times, our paid leaves would be deducted.
