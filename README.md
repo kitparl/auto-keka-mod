@@ -1,8 +1,8 @@
-# Bypassing CORS Restrictions for Keka HR Portal API
+# Bypassing CORS Restrictions for HR Portal API
 
 ## Overview
 
-While working with the Keka HR portal API, I encountered Cross-Origin Resource Sharing (CORS) issues that prevented me from making API calls directly from my browser. This document outlines the steps I took to resolve the CORS issue by adding another server and modifying CORS settings.
+While working with the Keka (HR portal) API, I encountered Cross-Origin Resource Sharing (CORS) issues that prevented me from making API calls directly from my browser. This document outlines the steps I took to resolve the CORS issue by adding another server and modifying CORS settings.
 
 ## What is CORS?
 
@@ -12,7 +12,7 @@ CORS is a security feature implemented by web browsers that restricts web pages 
 
 When attempting to call the Keka API directly from the browser, I received the following error message:
 
-
+![access_from_origin_null_has_been_blocked](https://github.com/user-attachments/assets/ca750b04-fe1d-4ae3-802c-63fb28df7462)
 
 This message indicates that the browser is blocking the request due to CORS policy.
 
